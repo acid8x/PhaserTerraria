@@ -7,6 +7,7 @@ var game = new Phaser.Game(1280, 736, Phaser.CANVAS, '', {
 
 var map,
     layer = [],
+    socket,
     player,
     gui = {},
     tools = [],
@@ -33,6 +34,8 @@ function create() { //function create () {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    socket = io.connect();
+
     tools = game.cache.getJSON('tools');
 
     createMap();
@@ -41,6 +44,38 @@ function create() { //function create () {
     createMenuGroup();
     createInputEvents();
 
+    setEventHandlers();
+
+}
+
+var setEventHandlers = function () {
+
+    socket.on('connect', onSocketConnected);
+    socket.on('disconnect', onSocketDisconnect);
+    socket.on('new player', onNewPlayer);
+    socket.on('move player', onMovePlayer);
+    socket.on('remove player', onRemovePlayer);
+
+};
+
+function onSocketConnected (data) {
+    console.log('onSocketConnected' + data);
+}
+
+function onSocketDisconnect (data) {
+    console.log('onSocketDisconnect' + data);
+}
+
+function onNewPlayer (data) {
+    console.log('onNewPlayer' + data);
+}
+
+function onMovePlayer (data) {
+    console.log('onMovePlayer' + data);
+}
+
+function onRemovePlayer (data) {
+    console.log('onRemovePlayer' + data);
 }
 
 function update() { //function update () {
