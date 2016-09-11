@@ -32,7 +32,7 @@ Play.prototype.init = function() {
 Play.prototype.create = function () {
 
     this.physics.startSystem(Phaser.Physics.ARCADE);
-    socket = io.connect();
+    
     tools = this.cache.getJSON('tools');
 
     this.createMap();
@@ -274,15 +274,15 @@ Play.prototype.updatePlayerMovements = function() { //function updatePlayerMovem
 
     player.body.velocity.x = 0;
 
-    if (this.game.input.keyboard.addKey(Phaser.Keyboard.A).isDown) {
-        player.scale.x = 1;
+    if (this.input.keyboard.addKey(Phaser.Keyboard.A).isDown) {
+        player.scale.x = -1;
         player.body.velocity.x = -150;
         if (player.facing != 'left') {
             player.animations.play('left');
             player.facing = 'left';
         }
-    } else if (this.game.input.keyboard.addKey(Phaser.Keyboard.D).isDown) {
-        player.scale.x = -1;
+    } else if (this.input.keyboard.addKey(Phaser.Keyboard.D).isDown) {
+        player.scale.x = 1;
         player.body.velocity.x = 150;
         if (player.facing != 'right') {
             player.animations.play('left');
@@ -292,23 +292,33 @@ Play.prototype.updatePlayerMovements = function() { //function updatePlayerMovem
         if (player.facing != 'idle') {
             player.animations.stop();
             if (player.facing == 'left') {
-                player.scale.x = 1;
-            } else {
                 player.scale.x = -1;
+            } else {
+                player.scale.x = 1;
             }
             player.frame = 14;
             player.facing = 'idle';
         }
     }
 
-    if (this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).isDown && player.body.blocked.down) {
+    if (this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).isDown && player.body.blocked.down) {
         player.body.velocity.y = -350;
     }
 
     for (var i = 48; i < 58; i++) {
         var num = i - 49;
         if (num == -1) num = 9;
-        if (this.game.input.keyboard.addKey(i).isDown) this.useItemNumber(num);
+        if (this.input.keyboard.addKey(i).isDown) this.useItemNumber(num);
+    }
+
+    if (player.toolSprite != null) {
+        if (this.input.mousePointer.leftButton.isDown) {
+            player.toolSprite.body.angularVelocity = player.equipment.tool.SPD;
+            this.hitTile(map.layers[1].data[player.marker.y / 32][player.marker.x / 32]);
+        } else {
+            if (player.toolSprite.body.angularVelocity != 0) player.toolSprite.body.angularVelocity = 0;
+            if (player.toolSprite.angle != -20) player.toolSprite.angle = -20;
+        }
     }
 };
 
