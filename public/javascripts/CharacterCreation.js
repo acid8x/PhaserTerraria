@@ -85,12 +85,15 @@ CharacterCreation.prototype.buttonChoice = function(sender) {
     //  Manually changing the frames of the button, i.e, how it will look when you play with it
     //item.frame += 1;
     for(var i = 0; i < guiElements.children.length; i++){
-        if(sender.id == guiElements.children[i].id && guiElements.children[i].key != 'bodyparts'){
-            if(sender.key == 'nextBtn'){
-                guiElements.children[i + 1].frame += 1;
+        if(sender.id == guiElements.children[i].id){
+            if(guiElements.children[i].key == 'head' || guiElements.children[i].key == 'chest' || guiElements.children[i].key == 'arms' || guiElements.children[i].key == 'legs') {
+                part = guiElements.children[i];
             }
-            if(sender.key == 'prevBtn'){
-                guiElements.children[i - 1].frame -= 1;
+            if(sender.key == 'nextBtn' && part){
+                part.frame += 1;
+            }
+            if(sender.key == 'prevBtn' && part){
+                part.frame -= 1;
             }
         }
     }
@@ -125,7 +128,7 @@ CharacterCreation.prototype.randomizeCharacter = function () {
     //}
     this.game.state.start("Play");
 
-}
+};
 
 
 
@@ -134,10 +137,10 @@ CharacterCreation.prototype.resetCharacter = function () {
 
     //Loop through the dressup elements and call the randomise method
     for(var i = 0; i < this.dressUpElements.length; i++) {
-        this.dressUpElements[i].reset();
+        this.dressUpElements[i].frame = 1;
     }
 
-}
+};
 
 
 
