@@ -90,8 +90,12 @@ Play.prototype.createMap = function() {
     map.addTilesetImage('crack', 'crack');
 
     layer[0] = map.createLayer('Tile Layer 1');
+    layer[0].scrollFactorX = 0.33;
+    layer[0].scrollFactorY = 0.33;
+
     layer[1] = map.createLayer('Tile Layer 2');
     map.setCollisionBetween(1, 10000, true, layer[1]);
+
     layer[2] = map.createLayer('Tile Layer 3');
 
     layer[0].resizeWorld();
@@ -180,12 +184,15 @@ Play.prototype.createMenuGroup = function() {
     var y = 76;
 
     for (i = 0; i < 40; i++) {
-        gui.inventory.socket[i] = {};
-        gui.inventory.socket[i].background = this.make.graphics();
+        gui.inventory.socket[i] = {
+            background: this.make.graphics(),
+            itemSprite: this.make.sprite(x+4,y+4,null)
+        };
         gui.inventory.socket[i].background.beginFill(0x666666, 0.7);
         gui.inventory.socket[i].background.drawRoundedRect(x, y, 40, 40, 5);
         gui.inventory.socket[i].background.endFill();
         gui.inventory.add(gui.inventory.socket[i].background);
+        gui.inventory.add(gui.inventory.socket[i].itemSprite);
         x += 44;
         if (x > 444) {
             x = 20;
@@ -212,6 +219,7 @@ Play.prototype.createMenuGroup = function() {
 
     for (i = 0; i < 10; i++) {
         gui.quickBar.socket[i] = {
+            item: null,
             selectedMarker: this.make.sprite(x,y,'selector'),
             background: this.make.graphics(),
             itemSprite: this.make.sprite(x+4,y+4,null)
@@ -219,7 +227,6 @@ Play.prototype.createMenuGroup = function() {
         gui.quickBar.socket[i].background.beginFill(0x666666, 0.7);
         gui.quickBar.socket[i].background.drawRoundedRect(x, y, 40, 40, 5);
         gui.quickBar.socket[i].background.endFill();
-        gui.quickBar.socket[i].selectedMarker.alpha = 0;
         gui.quickBar.add(gui.quickBar.socket[i].background);
         gui.quickBar.add(gui.quickBar.socket[i].selectedMarker);
         gui.quickBar.add(gui.quickBar.socket[i].itemSprite);
@@ -236,10 +243,10 @@ Play.prototype.createMenuGroup = function() {
 
 Play.prototype.createInputEvents = function() { //function createInputEvents() {
 
-    this.game.input.addMoveCallback(this.updateMarker, this);
+    this.input.addMoveCallback(this.updateMarker, this);
 
-    this.game.input.mouse.mouseWheelCallback = this.mouseWheel;
-    this.game.input.keyboard.addKey(Phaser.Keyboard.I).onDown.add(this.showInventoryMenu, this);
+    this.input.mouse.mouseWheelCallback = this.mouseWheel;
+    this.input.keyboard.addKey(Phaser.Keyboard.I).onDown.add(this.showInventoryMenu, this);
 
 };
 
@@ -254,17 +261,16 @@ Play.prototype.buildInventoryMenu = function() { //function buildInventoryMenu()
 
     for (var i = 0; i < 40; i++) {
         if (player.inventory[i].tileIndex != -1) {
-            var sprite = this.game.make.sprite(4, 4, 'tilesSprite', player.inventory[i].tileIndex - 1);
+            if (gui.inventory.socket[i].itemSprite.textSprite != null) gui.inventory.socket[i].itemSprite.textSprite.destroy();
             var text = '';
             text += player.inventory[i].tileQuantity;
-            var textSprite;
             if (player.inventory[i].tileQuantity < 10) {
-                textSprite = this.game.add.text(22, 16, text, style);
+                gui.inventory.socket[i].itemSprite.textSprite = this.add.text(22, 16, text, style);
             } else {
-                textSprite = this.game.add.text(15, 16, text, style);
+                gui.inventory.socket[i].itemSprite.textSprite = this.add.text(15, 16, text, style);
             }
-            sprite.addChild(textSprite);
-            gui.inventory.socket[i].background.addChild(sprite);
+            gui.inventory.socket[i].itemSprite.loadTexture('tilesSprite', player.inventory[i].tileIndex - 1);
+            gui.inventory.socket[i].itemSprite.addChild(gui.inventory.socket[i].itemSprite.textSprite);
         }
     }
 
@@ -315,17 +321,12 @@ Play.prototype.updatePlayerMovements = function() { //function updatePlayerMovem
         if (this.input.mousePointer.leftButton.isDown) {
             player.toolSprite.body.angularVelocity = player.equipment.tool.SPD;
             this.hitTile(map.layers[1].data[player.marker.y / 32][player.marker.x / 32]);
+            this.updateMarker();
         } else {
             if (player.toolSprite.body.angularVelocity != 0) player.toolSprite.body.angularVelocity = 0;
             if (player.toolSprite.angle != -20) player.toolSprite.angle = -20;
         }
     }
-};
-
-Play.prototype.mouseWheel = function() { //function mouseWheel() {
-
-    console.log(this.game.input.mouse.wheelDelta);
-
 };
 
 Play.prototype.useItemNumber = function(num) { //function useItemNumber(num) {
@@ -349,6 +350,15 @@ Play.prototype.useItemNumber = function(num) { //function useItemNumber(num) {
         }
     }
 
+};
+
+Play.prototype.mouseWheel = function() { //function mouseWheel() {
+
+    var i = player.useQuickBarItem + this.input.mouse.wheelDelta;
+    if (i < 0) i = 9;
+    else if (i > 9) i = 0;
+    if (player.useQuickBarItem == null) i = 0;
+    this.useItemNumber(i);
 };
 
 Play.prototype.hitTile = function(tile) { //function isTileDestroy(tile) {

@@ -71,6 +71,7 @@ CharacterCreation.prototype.createDressup = function() {
         var item = this.dressUpElements[i];
         bodyPart = this.add.sprite(item.x, item.y, item.sprite);
         bodyPart.id = i;
+        bodyPart.frame = 0;
         guiElements.add(bodyPart);
 
         prevBtn = this.make.button(0, btnBotY - 70 * i, 'prevBtn', this.buttonChoice, this, 2, 1, 0);
@@ -88,22 +89,24 @@ CharacterCreation.prototype.buttonChoice = function(sender) {
         if(sender.id == guiElements.children[i].id){
             if(guiElements.children[i].key == 'head' || guiElements.children[i].key == 'chest' || guiElements.children[i].key == 'arms' || guiElements.children[i].key == 'legs') {
                 part = guiElements.children[i];
+                console.log(part);
             }
             if(sender.key == 'nextBtn' && part){
                 part.frame += 1;
             }
             if(sender.key == 'prevBtn' && part){
-                part.frame -= 1;
+                if(part.frame > -1) {
+                    part.frame -= 1;
+                }
+                else {
+                    part.frame = 0;
+                    //console.log(part);
+                }
             }
+
         }
     }
 
-};
-
-CharacterCreation.prototype.prevChoice = function(sender) {
-
-    //  Manually changing the frames of the button, i.e, how it will look when you play with it
-    console.log(sender.id);
 };
 
 //Holds the code for generating buttons which deal with the customisation of the character.
@@ -136,8 +139,13 @@ CharacterCreation.prototype.randomizeCharacter = function () {
 CharacterCreation.prototype.resetCharacter = function () {
 
     //Loop through the dressup elements and call the randomise method
-    for(var i = 0; i < this.dressUpElements.length; i++) {
-        this.dressUpElements[i].frame = 1;
+    for(var i = 0; i < guiElements.children.length; i++) {
+        if(guiElements.children[i].key == 'nextBtn' || guiElements.children[i].key == 'prevBtn'){
+            guiElements.children[i].frame = 1;
+        }
+        else{
+            guiElements.children[i].frame = 0;
+        }
     }
 
 };
